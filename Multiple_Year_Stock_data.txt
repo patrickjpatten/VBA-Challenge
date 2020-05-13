@@ -1,0 +1,180 @@
+Sub Dosomething()
+    Dim xSh As Worksheet
+    Application.ScreenUpdating = False
+    For Each xSh In Worksheets
+        xSh.Select
+        Call RunCode
+    Next
+    Application.ScreenUpdating = True
+End Sub
+
+
+Sub RunCode()
+
+Cells(1, 9).Value = "Ticker"
+Cells(1, 10).Value = "Yearly Change"
+Cells(1, 11).Value = "Percent Change"
+Cells(1, 12).Value = "Total Stock Volume"
+Cells(2, 15).Value = "Greatest % Increase"
+Cells(3, 15).Value = "Greatest % Decrease"
+Cells(4, 15).Value = "Greatest Total Volume"
+Cells(1, 16).Value = "Ticker"
+Cells(1, 17).Value = "Value"
+
+  ' Set an initial variable for holding the Stock Ticker
+  Dim Ticker As String
+  ' Set an initial variable for holding the total stock volume
+  Dim Ticker_tot_vol As LongLong
+  Ticker_tot_vol = 0
+  'set an initial variable for holding the earliest stock price & last stock price
+  Dim First_Stock_Price As Double
+  First_Stock_Price = Cells(2, 6).Value
+  Dim Last_Stock_Price As Double
+  
+  ' Keep track of the location for each ticker in the summary table
+  Dim Summary_Table_Row As Integer
+  Summary_Table_Row = 2
+  'Count the rows in the work book
+      Dim last_row_tickers As Long
+    last_row_tickers = Cells(Rows.Count, 1).End(xlUp).Row
+     ' Loop through all the stocks
+  For i = 2 To last_row_tickers
+    ' Check if we are still within the same credit card brand, if it is not...
+
+    
+    If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+      ' Set the Ticker
+      Ticker = Cells(i, 1).Value
+      ' Add to the Ticker Total
+      Ticker_tot_vol = Ticker_tot_vol + Cells(i, 7).Value
+      'Set the last stock price
+      Last_Stock_Price = Cells(i, 6).Value
+      ' Print the Credit Card Brand in the Summary Table
+      Range("i" & Summary_Table_Row).Value = Ticker
+      ' Print the Brand Amount to the Summary Table
+      Range("l" & Summary_Table_Row).Value = Ticker_tot_vol
+      ' Print the Yearly $ change to the Summary Table
+      Range("j" & Summary_Table_Row).Value = Last_Stock_Price - First_Stock_Price
+       ' Print the Yearly % change to the Summary Table if the first price is greater than 0
+       If First_Stock_Price > 0 Then
+      Range("k" & Summary_Table_Row).Value = (Last_Stock_Price - First_Stock_Price) / First_Stock_Price
+      Else
+      Range("k" & Summary_Table_Row).Value = 0
+      End If
+            ' Add one to the summary table row
+      Summary_Table_Row = Summary_Table_Row + 1
+      ' Reset the Stock Volume
+      Ticker_tot_vol = 0
+     ' Reset the Starting price
+      First_Stock_Price = Cells(i + 1, 6)
+      
+      
+    ' If the cell immediately following a row is the same brand...
+    Else
+      ' Add to the Brand Total
+      Ticker_tot_vol = Ticker_tot_vol + Cells(i, 7).Value
+    End If
+  Next i
+  
+
+  ' Go through summary table and pick out max and min
+
+  'Count the rows in the summary table
+      Dim last_row_summary As Long
+    With ActiveSheet
+    last_row_summary = .Cells(.Rows.Count, "I").End(xlUp).Row
+    End With
+          
+          ' Color in the yearly change
+          
+            For i = 2 To last_row_summary
+      If Cells(i, 10).Value > 0 Then
+        Cells(i, 10).Interior.ColorIndex = 4
+      
+      Else
+         Cells(i, 10).Interior.ColorIndex = 3
+       
+    End If
+
+    
+  Next i
+
+    
+    
+    
+      ' Set the variables for the winners
+    Dim GreatestPerIncTicker As String
+    Dim GreatestPerDecTicker As String
+    Dim GreatestTotVolTicker As String
+    Dim GreatestPerInc As Double
+    Dim GreatestPerDec As Double
+    Dim Greatesttotvol As LongLong
+
+'set the starting values for the winners
+      GreatestPerIncTicker = Cells(i, 9).Value
+      GreatestPerDecTicker = Cells(i, 9).Value
+      GreatestTotVolTicker = Cells(i, 9).Value
+      GreatestPerInc = Cells(i, 11).Value
+      GreatestPerDec = Cells(i, 11).Value
+      Greatesttotvol = Cells(i, 12).Value
+
+     ' Loop through all the stocks for the individual winners
+  For i = 2 To last_row_summary
+      If Cells(i + 1, 11).Value > GreatestPerInc Then
+        GreatestPerIncTicker = Cells(i + 1, 9).Value
+        GreatestPerInc = Cells(i + 1, 11).Value
+      
+      Else
+       
+    End If
+
+    
+  Next i
+  
+    For i = 2 To last_row_summary
+      If Cells(i + 1, 11).Value < GreatestPerDec Then
+        GreatestPerDecTicker = Cells(i + 1, 9).Value
+        GreatestPerDec = Cells(i + 1, 11).Value
+      
+      Else
+       
+    End If
+
+    
+  Next i
+  
+      For i = 2 To last_row_summary
+      If Cells(i + 1, 12).Value > Greatesttotvol Then
+        GreatestTotVolTicker = Cells(i + 1, 9).Value
+        Greatesttotvol = Cells(i + 1, 12).Value
+      
+      Else
+       
+    End If
+
+    
+  Next i
+  
+
+      ' Print the Winners
+      Cells(2, 16).Value = GreatestPerIncTicker
+      Cells(2, 17).Value = GreatestPerInc
+      Cells(3, 16).Value = GreatestPerDecTicker
+      Cells(3, 17).Value = GreatestPerDec
+      Cells(4, 16).Value = GreatestTotVolTicker
+      Cells(4, 17).Value = Greatesttotvol
+      
+    'Format the worksheet
+    
+    Cells.Select
+    Cells.EntireColumn.AutoFit
+    Columns("K").NumberFormat = "0.00%"
+    Range("Q2:Q3").Select
+    Selection.NumberFormat = "0.00"
+    Selection.Style = "Percent"
+    Range("A1").Select
+
+
+
+End Sub
+
